@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String
 from app.core.database import Base
 
 
@@ -10,5 +10,4 @@ class Office(Base):
     city = Column(String, nullable=False)
     country = Column(String, nullable=False)
     address = Column(String, nullable=True)
-    remote = Column(Boolean, nullable=False, default=False)
 
