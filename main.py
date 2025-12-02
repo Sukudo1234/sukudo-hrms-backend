@@ -1,7 +1,8 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from app.api import users, auth
+from app.api import users, auth, departments
 from app.core.database import engine, Base
+from app.core.seed import seed_departments
 
 
 @asynccontextmanager
@@ -9,6 +10,8 @@ async def lifespan(app: FastAPI):
     # Startup: Create tables (or use Alembic migrations instead)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    # Seed static departments
+    await seed_departments()
     yield
     # Shutdown: Add cleanup code here if needed
 
@@ -23,6 +26,7 @@ app = FastAPI(
 # Include routers
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(departments.router)
 
 
 @app.get("/")

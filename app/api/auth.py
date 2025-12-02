@@ -1,3 +1,4 @@
+from typing import cast
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -40,7 +41,7 @@ async def login(
         )
     
     # Verify password
-    if not verify_password(login_data.password, user.password_hash):
+    if not verify_password(login_data.password, cast(str, user.password_hash)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password"
@@ -57,9 +58,9 @@ async def login(
     return TokenResponse(
         access_token=access_token,
         token_type="bearer",
-        user_id=int(user.id),
-        email=str(user.email),
+        user_id=cast(int, user.id),
+        email=cast(str, user.email),
         role=user.role.value,
-        name=str(user.name)
+        name=cast(str, user.name)
     )
 
