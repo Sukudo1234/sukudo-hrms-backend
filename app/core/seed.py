@@ -2,6 +2,7 @@ from sqlalchemy import select, func, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import AsyncSessionLocal
 from app.models.department import Department
+from app.models.role import Role
 
 
 # Static departments to seed
@@ -18,6 +19,15 @@ STATIC_DEPARTMENTS = [
     "Post Production and audio Enginering",
     "Quality control",
     "Factory"
+]
+
+# Static roles to seed
+STATIC_ROLES = [
+    "Admin",
+    "Sub-admin",
+    "HR",
+    "Employee",
+    "IT"
 ]
 
 
@@ -55,5 +65,42 @@ async def seed_departments():
         except Exception as e:
             await session.rollback()
             print(f"✗ Error seeding departments: {e}")
+            raise
+
+
+async def seed_roles():
+    """
+    Seed static roles into the database.
+    Only seeds if the table is empty (one-time initialization).
+    After seeding, roles should be managed through the API.
+    """
+    async with AsyncSessionLocal() as session:
+        try:
+            # Check if roles already exist
+            result = await session.execute(select(func.count(Role.id)))
+            count = result.scalar_one()
+            
+            if count > 0:
+                print(f"✓ Roles already exist ({count} role(s)), skipping seed")
+                return
+            
+            # Reset the sequence to start from 1 (only when seeding)
+            await session.execute(text("ALTER SEQUENCE roles_id_seq RESTART WITH 1"))
+            await session.commit()
+            print("✓ Reset roles sequence to start from 1")
+            
+            # Create new roles
+            roles_to_create = [
+                Role(user_role=role_name)
+                for role_name in STATIC_ROLES
+            ]
+            
+            session.add_all(roles_to_create)
+            await session.commit()
+            print(f"✓ Seeded {len(roles_to_create)} role(s)")
+                
+        except Exception as e:
+            await session.rollback()
+            print(f"✗ Error seeding roles: {e}")
             raise
 

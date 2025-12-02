@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.api import users, auth, departments
 from app.core.database import engine, Base
-from app.core.seed import seed_departments
+from app.core.seed import seed_departments, seed_roles
 
 
 @asynccontextmanager
@@ -12,6 +12,8 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
     # Seed static departments
     await seed_departments()
+    # Seed static roles
+    await seed_roles()
     yield
     # Shutdown: Add cleanup code here if needed
 
