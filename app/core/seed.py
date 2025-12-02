@@ -1,5 +1,4 @@
 from sqlalchemy import select, func, text
-from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import AsyncSessionLocal
 from app.models.department import Department
 from app.models.role import Role
