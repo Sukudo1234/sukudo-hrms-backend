@@ -126,6 +126,22 @@ async def create_user(
                 detail="Department not found"
             )
     
+    # Normalize office_id: convert 0 to None (no office)
+    office_id = user_data.office_id if user_data.office_id and user_data.office_id > 0 else None
+    
+    # Validate office_id if provided
+    if office_id:
+        from app.models.office import Office
+        office_result = await session.execute(
+            select(Office).where(Office.id == office_id)
+        )
+        office = office_result.scalar_one_or_none()
+        if not office:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Office not found"
+            )
+    
     # Create new user
     try:
         user_role = UserRole(user_data.role)
@@ -149,6 +165,7 @@ async def create_user(
         password_hash=get_password_hash(user_data.password),
         role=user_role,
         department_id=department_id,
+        office_id=office_id,
         manager_id=manager_id,
         date_of_joining=user_data.date_of_joining,
         date_of_birth=user_data.date_of_birth,
@@ -166,6 +183,7 @@ async def create_user(
         "email": new_user.email,
         "role": new_user.role.value,
         "department_id": new_user.department_id,
+        "office_id": new_user.office_id,
         "manager_id": new_user.manager_id,
         "date_of_joining": new_user.date_of_joining,
         "date_of_birth": new_user.date_of_birth,
@@ -252,6 +270,7 @@ async def get_users(
             "email": user.email,
             "role": user.role.value,
             "department_id": user.department_id,
+            "office_id": user.office_id,
             "manager_id": user.manager_id,
             "date_of_joining": user.date_of_joining,
             "date_of_birth": user.date_of_birth,
